@@ -1,0 +1,7 @@
+{
+    "description": "This is a collection of Escrime NFTs. Olympic games Paris 2024",
+    "external_url": "https://forum.openzeppelin.com",
+    "image": "https://bafybeiaxyqpah4wudwsgn2stqx7bwo5pikqdwlvgjogul7eqzpfdz4thn4.ipfs.nftstorage.link",
+    "name": "Escrime",
+    "attributes": [{"trait_type": "Type","value": "Sport"},{"trait_type": "Category","value": "Escrime"},{"trait_type": "Level","value": "Gold"}]
+}
