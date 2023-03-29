@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 /// @title JO 2024 NFT
 /// @notice You can use this contract for mint JO2024 
 /// @dev Deploy a ERC1155 NFT Collection
-contract NFT is ERC1155, Pausable, Ownable {
+contract JO2024 is ERC1155, Pausable, Ownable {
 
     uint256 public constant Athletisme = 0;
     uint256 public constant Aviron = 1;
