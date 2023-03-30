@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 /// @notice You can use this contract for mint JO2024 
 /// @dev Deploy a ERC1155 NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable {
-
+    /// The 5 tokens possible
     uint256 public constant Athletisme = 0;
     uint256 public constant Aviron = 1;
     uint256 public constant Escrime = 2;
@@ -26,16 +26,17 @@ contract JO2024 is ERC1155, Pausable, Ownable {
     Counters.Counter private _tokenIds;
     mapping(uint256 => string) private _tokenURIs;
     
-    // set _uri 
+    /// @dev Constructor set _uri 
+    /// First item are minted
     constructor() ERC1155("https://nftstorage.link/ipfs/bafybeigi75mgneniifyoem7y2nkjqvadwmi6muj2ufehdhbec4mrazpmxa/{id}.json") {
-        uint256 newItemId = getTokenIds();
-        _mint(msg.sender, Athletisme, newItemId, "");
-        _mint(msg.sender, Aviron, newItemId, "");
-        _mint(msg.sender, Escrime, newItemId, "");
-        _mint(msg.sender, Basketball, newItemId, "");
-        _mint(msg.sender, Boxe, newItemId, "");
+        _mint(msg.sender, Athletisme, 1, "");
+        _mint(msg.sender, Aviron, 1, "");
+        _mint(msg.sender, Escrime, 1, "");
+        _mint(msg.sender, Basketball, 1, "");
+        _mint(msg.sender, Boxe, 1, "");
     }
-    
+
+    /// @dev mint function  
     function mintNFT(uint256 tokenType, uint256 tokenNb) public returns (uint256) {
         uint256 newItemId = getTokenIds();
         _mint(msg.sender, tokenType, tokenNb, "");
