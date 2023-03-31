@@ -11,8 +11,8 @@ require("solidity-coverage");
 dotenv.config();
 let accounts: string[] = [];
 
-if (process.env.PRIVATE_KEY) {
-  accounts.push(process.env.PRIVATE_KEY);
+if (process.env.PRIVATE_KEY3) {
+  accounts.push(process.env.PRIVATE_KEY3);
 }
 
 const config: HardhatUserConfig = {
@@ -38,7 +38,22 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      chainId: 1337,
+      //url: "http://127.0.0.1:8545",
+      chainId: 31337,
+      accounts: [
+        {
+          privateKey: process.env.PRIVATE_KEY,
+          balance: '10000000000000000000000'
+        },
+        {
+          privateKey: process.env.PRIVATE_KEY2,
+          balance: '20000000000000000000000'
+        },
+        {
+          privateKey: process.env.PRIVATE_KEY3,
+          balance: '30000000000000000000000'
+        }
+      ],
     },
     sepolia: {
       chainId: 11155111,
