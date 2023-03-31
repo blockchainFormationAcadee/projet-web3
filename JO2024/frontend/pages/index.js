@@ -1,10 +1,9 @@
-import Head from 'next/head'
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Flex, Text, Button, useToast } from '@chakra-ui/react';
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
 import Contract from '../../backend/artifacts/contracts/JO2024.sol/JO2024.json';
+import LogoConnect from 'pages/components/LogoConnect'
 
 export default function Home() {
 
@@ -69,18 +68,7 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>JO2024 NFT App</title>
-        <meta name="description" content="JO2024 NFT Application FrontEnd" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Flex height="15vh" justifyContent="space-between" alignItems="center" p="2rem">
-        <Text>
-          Logo todo
-        </Text>
-        <ConnectButton />
-      </Flex>
+      < LogoConnect />
       <Flex justifyContent="center" alignItems="center" height="85vh">
         {(isConnected ? (
           <Flex direction="column">
