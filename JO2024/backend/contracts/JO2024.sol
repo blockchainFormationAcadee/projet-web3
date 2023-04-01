@@ -2,6 +2,7 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,7 +13,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 /// @notice You can use this contract for mint JO2024 
 /// @dev Deploy a ERC1155 NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable {
-    /// The 5 tokens possible
+    /// The 5 tokens type possible
     uint256 public constant Athletisme = 0;
     uint256 public constant Aviron = 1;
     uint256 public constant Escrime = 2;
@@ -22,37 +23,83 @@ contract JO2024 is ERC1155, Pausable, Ownable {
     string private constant _name = 'JO 2024 Paris';
     string private constant _symbol = 'JO';
 
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-    mapping(uint256 => string) private _tokenURIs;
-    
-    /// @dev Constructor set _uri 
-    /// First item are minted
+    /// workflow exchange state
+    enum ExchangeState {
+        Start,
+        ToValidate,
+        Closed
+    }
+
+    /// Structure to save the exchange token between 2 collectors 
+    struct Exchange {
+        uint256 tokenTypeFrom;
+        uint256 tokenTypeTo;
+        uint256 amount;
+        address to;
+        ExchangeState exchangeState;
+    }
+
+    /// @dev map of address from => to exchange Structure
+    mapping(address => Exchange) private _mapToExchange;
+
+    modifier onlyExchanger() {
+        require(msg.sender == msg.sender, "only exchanger can call this");
+        _;
+    }
+
+    /// @dev Constructor 
+    /// set _uri 
+    /// set exchanger
     constructor() ERC1155("https://nftstorage.link/ipfs/bafybeigi75mgneniifyoem7y2nkjqvadwmi6muj2ufehdhbec4mrazpmxa/{id}.json") {
-        _mint(msg.sender, Athletisme, 1, "");
-        _mint(msg.sender, Aviron, 1, "");
-        _mint(msg.sender, Escrime, 1, "");
-        _mint(msg.sender, Basketball, 1, "");
-        _mint(msg.sender, Boxe, 1, "");
     }
 
-    /// @dev mint function  
-    function mintNFT(uint256 tokenType, uint256 tokenNb) public returns (uint256) {
-        uint256 newItemId = getTokenIds();
-        _mint(msg.sender, tokenType, tokenNb, "");
-        //_setTokenURI(newItemId, _tokenURI);
-        return newItemId;
+     /// @notice mint function
+     /// @param tokenType The type of token
+     /// @param tokenNb The number to mint
+    function mintJeton(uint256 tokenType, uint256 tokenNb) public {
+        _mint(msg.sender, tokenType, tokenNb, "0x0");
     }
 
-    /// @dev Gets the token id.
-    function getTokenIds() private returns (uint256) {
-       _tokenIds.increment();
-       uint256 newItemId = _tokenIds.current();
-       return newItemId;
+    /// @notice start exchange tokens 
+    /// @param _tokenTypeFrom The type of token
+    function exchangeStart(uint256 _tokenTypeFrom, uint256 _tokenTypeTo, uint256 _amount) public {
+        //require(balanceOf(msg.sender, tokenType) > 0, "No tokenType avalable");
+        _mapToExchange[msg.sender] = Exchange(_tokenTypeFrom, _tokenTypeTo, _amount, address(0), ExchangeState.Start);
     }
 
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal virtual {
-        _tokenURIs[tokenId] = _tokenURI;
+    /// @notice exchange tokens found
+    /// @param _from The address who have started the exchange
+    function exchangeFound(address _from) public {
+        //require(balanceOf(msg.sender, tokenType) > 0, "No tokenType avalable");
+        _mapToExchange[_from].to = msg.sender;
+        _mapToExchange[_from].exchangeState = ExchangeState.ToValidate;
+        setApprovalForAll(_from, true);
+    }
+
+    /// @notice exchange tokens type between 2 address
+    function exchange() public {
+        //require(balanceOf(_from, _fromTokenType) > 0, "No tokenType avalable require1");
+        //require(balanceOf(_to, _toTokenType) > 0, "No tokenType avalable require2");
+        //require(_mapToExchange[_from] == _fromTokenType, "No tokenType avalable require2");
+
+        _mapToExchange[msg.sender].exchangeState = ExchangeState.Closed;
+        safeTransferFrom(msg.sender, _mapToExchange[msg.sender].to, _mapToExchange[msg.sender].tokenTypeFrom, _mapToExchange[msg.sender].amount, "0x0");
+        safeTransferFrom(_mapToExchange[msg.sender].to, msg.sender, _mapToExchange[msg.sender].tokenTypeTo, _mapToExchange[msg.sender].amount, "0x0");
+    }
+
+    /// @notice exchangeClose tokens type between 2 address
+    function exchangeClose(address _from) public {
+        //require(balanceOf(_from, _fromTokenType) > 0, "No tokenType avalable require1");
+        //require(balanceOf(_to, _toTokenType) > 0, "No tokenType avalable require2");
+        //require(_mapToExchange[_from] == _fromTokenType, "No tokenType avalable require2");
+
+        delete _mapToExchange[_from];
+        setApprovalForAll(_from, false);
+    }
+
+    /// @notice exchangeState
+    function exchangeState() public view returns (ExchangeState){
+        return(_mapToExchange[msg.sender].exchangeState);
     }
 
     /// @dev Gets the token name.
@@ -77,10 +124,9 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         _pause();
     }
 
-    /**
-     * @notice Unpause the contract
-     */
+    /// @notice Unpause the contract
     function unpause() external onlyOwner {
         _unpause();
     }
+
 }

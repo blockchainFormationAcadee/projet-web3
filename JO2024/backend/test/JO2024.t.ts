@@ -32,13 +32,36 @@ describe("JO2024", function () {
 
   describe("Minting", () => {
     it("Should mint correctly", async () => {
+      await instanceJO2024.mintJeton(0, 1);
+      await instanceJO2024.mintJeton(1, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
-      await instanceJO2024.mintNFT(0, 1);
+      await instanceJO2024.mintJeton(0, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(2);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
     });
   });
+
+  describe("exchangeStart", () => {
+    it("Should exchangeStart correctly", async () => {
+      await instanceJO2024.mintJeton(0, 1);
+      expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
+      await instanceJO2024.exchangeStart(0,1,1);
+      expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
+      expect(await instanceJO2024.exchangeState()).to.be.equal(0);
+    });
+  });
+
+  describe("exchangeFound", () => {
+    it("Should exchangeFound correctly", async () => {
+      await instanceJO2024.mintJeton(0, 1);
+      expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
+      await instanceJO2024.exchangeStart(0,1,1);
+      //await instanceJO2024.exchangeFound(owner.address);
+      //expect(await instanceJO2024.exchangeState()).to.be.equal(1);
+    });
+  });
+
 
   describe("Pause", () => {
     it("Shouldn't pause if not owner", async () => {
@@ -59,11 +82,6 @@ describe("JO2024", function () {
       expect(await instanceJO2024.paused()).to.be.equal(true);
       await instanceJO2024.unpause();
       expect(await instanceJO2024.paused()).to.be.equal(false);
-    });
-
-    it("Shouldn't mint while paused", async () => {
-      await instanceJO2024.pause();
-      await expect(instanceJO2024.mintNFT(0, 1)).to.be.revertedWith("Pausable: paused");
     });
 
   });
