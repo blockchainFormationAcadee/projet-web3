@@ -2,21 +2,16 @@ import { Flex, Text, Button, useToast, Image, Box } from '@chakra-ui/react';
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
+// Dev : The ABI json will be stored into /config/JO2024.json
 import Contract from '../../backend/artifacts/contracts/JO2024.sol/JO2024.json';
-import LogoConnect from 'pages/components/LogoConnect'
+import LogoConnect from 'components/LogoConnect'
+import { contractAddress } from 'config/constants';
 
 export default function Home() {
 
   const { address, isConnected } = useAccount()
   const provider = useProvider()
   const { data: signer } = useSigner()
-  // Mumbai const contractAddress = "0xf1af432A1dF4B56e0BB40335512BD58E7cCF58E0"
-  const contractAddress = "0xa38B2C7EA4E6B8fF62b95bB7C13E69252777fccB"
-  //const contractAddress = "0xA209366aee22F05D3CB386dB52eCcB36b5AC571E"
-  // FormAcadee 2
-  // const ownerAddress = "0x7Cd33a833dC720Acc8d17bC17edC41cc526FebB2"
-  // FormAcadee
-  const ownerAddress = "0x005D71CA579843a1C3EeFEd02E5909CF77976761"
   const toast = useToast()
   const [nbMintedAthletisme, setNbMintedAthletisme] = useState(null)
   const [nbMintedAviron, setNbMintedAviron] = useState(null)
@@ -48,7 +43,7 @@ export default function Home() {
     try {
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       // type : Athletisme = 0 Aviron = 1 Escrime = 2 Basketball = 3 Boxe = 4
-      let transaction = await contract.mintJeton(type, number);
+      let transaction = await contract.mint(type, number);
       transaction.wait();
       getDatas();
       toast({
@@ -97,7 +92,7 @@ export default function Home() {
     try {
       console.log("exchangeFound");
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
-      let transaction = await contract.exchangeFound(ownerAddress);
+      let transaction = await contract.exchangeFound(formAcadeeAddress);
       transaction.wait();
       toast({
         title: 'Félicitations !',
@@ -145,7 +140,7 @@ export default function Home() {
     try {
       console.log("exchangeClose");
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
-      let transaction = await contract.exchangeClose(ownerAddress);
+      let transaction = await contract.exchangeClose(formAcadeeAddress);
       transaction.wait();
       toast({
         title: 'Félicitations !',

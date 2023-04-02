@@ -10,17 +10,19 @@ import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { ChakraProvider } from '@chakra-ui/react'
 
+import { apiKeyAlchemyProvider } from 'config/constants';
+
 const { chains, provider } = configureChains(
   [hardhat, polygonMumbai],
   [
-    alchemyProvider({ apiKey: 'Y3mDOtUzfEkHU8KaxuyTHKncgaR5Xibb' }),
+    alchemyProvider({ apiKey: apiKeyAlchemyProvider }),
     //infuraProvider({ apiKey: 'yourInfuraApiKey' }),
     publicProvider()
   ]
 );
 
 const { connectors } = getDefaultWallets({
-  appName: 'RainbowKit App',
+  appName: 'RainbowKit App for JO2024',
   chains
 });
 

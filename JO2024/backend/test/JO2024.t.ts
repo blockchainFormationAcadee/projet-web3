@@ -32,19 +32,23 @@ describe("JO2024", function () {
 
   describe("Minting", () => {
     it("Should mint correctly", async () => {
-      await instanceJO2024.mintJeton(0, 1);
-      await instanceJO2024.mintJeton(1, 1);
+      await instanceJO2024.mint(0, 1);
+      await instanceJO2024.mint(1, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
-      await instanceJO2024.mintJeton(0, 1);
+      await instanceJO2024.mint(0, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(2);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
+
+      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
+      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
+
     });
   });
 
   describe("exchangeStart", () => {
     it("Should exchangeStart correctly", async () => {
-      await instanceJO2024.mintJeton(0, 1);
+      await instanceJO2024.mint(0, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       await instanceJO2024.exchangeStart(0,1,1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
@@ -54,14 +58,54 @@ describe("JO2024", function () {
 
   describe("exchangeFound", () => {
     it("Should exchangeFound correctly", async () => {
-      await instanceJO2024.mintJeton(0, 1);
-      expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
-      await instanceJO2024.exchangeStart(0,1,1);
-      //await instanceJO2024.exchangeFound(owner.address);
-      //expect(await instanceJO2024.exchangeState()).to.be.equal(1);
+      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
+      await instanceJO2024.mintWithAddress(addr2.address, 3, 10);
+      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(10);
+      await instanceJO2024.exchangeStartWithAddress(addr1.address, 4, 3, 10);
+      await instanceJO2024.exchangeFoundWithAddress(addr1.address, addr2.address);
+      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(1);
     });
   });
 
+  describe("exchange", () => {
+    it("Should exchange correctly", async () => {
+      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
+      await instanceJO2024.mintWithAddress(addr2.address, 3, 10);
+      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(10);
+      await instanceJO2024.exchangeStartWithAddress(addr1.address, 4, 3, 10);
+      await instanceJO2024.exchangeFoundWithAddress(addr1.address, addr2.address);
+      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(1);
+/*
+      // pb car pas le msg.sender
+      await instanceJO2024.exchangeWithAddress(addr1.address);
+
+      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(0);
+      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(0);
+      expect(await instanceJO2024.balanceOf(addr1.address, 3)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(addr2.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(2);
+*/
+    });
+  });
+
+  describe("exchangeClose", () => {
+    it("Should exchangeClose correctly", async () => {
+      //expect(await instanceJO2024.exchangeState()).to.be.equal(2);
+      //await instanceJO2024.exchangeClose(addr1.address);
+    });
+  });
+
+  describe("burn", () => {
+    it("Should burn correctly", async () => {
+      await instanceJO2024.mint(1, 10000);
+      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(10000);
+      await instanceJO2024.burn(1);
+      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(9000);
+      expect(await instanceJO2024.balanceOf(owner.address, 6)).to.be.equal(1);
+    });
+  });
 
   describe("Pause", () => {
     it("Shouldn't pause if not owner", async () => {
