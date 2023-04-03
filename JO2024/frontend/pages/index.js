@@ -18,6 +18,7 @@ export default function Home() {
   const [nbMintedEscrime, setNbMintedEscrime] = useState(null)
   const [nbMintedBasketball, setNbMintedBasketball] = useState(null)
   const [nbMintedBoxe, setNbMintedBoxe] = useState(null)
+  const [exchangeStateToken, setExchangeStateToken] = useState(null)
 
   useEffect(() => {
     if(isConnected) {
@@ -37,6 +38,7 @@ export default function Home() {
     setNbMintedBasketball(nbMinted.toString());
     nbMinted = await contract.balanceOf(address, 4);
     setNbMintedBoxe(nbMinted.toString());
+    setExchangeStateToken(await contract.exchangeState());
   }
 
   const mintJeton = async(type, number) => {
@@ -93,6 +95,7 @@ export default function Home() {
       console.log("exchangeFound");
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       let transaction = await contract.exchangeFound(formAcadeeAddress);
+      console.log("transaction : "+transaction);
       transaction.wait();
       toast({
         title: 'Félicitations !',
@@ -160,29 +163,53 @@ export default function Home() {
       })
     }
   }
+  const exchangeState = async() => {
+    try {
+      console.log("exchangeState");
+      const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
+      let transaction = await contract.exchangeState();
+      transaction.wait();
+      toast({
+        title: 'Félicitations !',
+        description: "Vous avez bien recupéré l'état de l'échange!",
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+    catch {
+      toast({
+        title: 'Erreur !',
+        description: "Une erreur est survenue",
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }
   return (
     <>
       < LogoConnect />
-      <Flex justifyContent="center" alignItems="center" height="85vh">
+      <Flex justifyContent="center" alignItems="center" height="50vh">
         {(isConnected ? (
           <Flex direction="column">
-            <Text align="center">Tu es connecté et tu peux minter un NFT JO2024</Text>
+            <Text align="center">Tu es connecté et tu peux collecter des jetons JO2024</Text>
             <Flex mt="2rem">
               <Box boxSize='215px'>
                 <Image src='https://bafybeib2qiimyx64cuopeceksxbzcejwctofni4s33zsgoqunrk22dczye.ipfs.nftstorage.link' alt='Athletisme' />
                 <Button onClick={() => mintJeton(0,1)}>Mint 1 Athletisme NFT ({nbMintedAthletisme})</Button>
-                <Button onClick={() => exchangeStart(0,1,1)}>Start a exchange Athletisme token </Button>
-                <Button onClick={() => exchangeFound()}>Found a exchange Athletisme token </Button>
-                <Button onClick={() => exchange()}>Validate a exchange Athletisme token </Button>
-                <Button onClick={() => exchangeClose()}>Validate a exchange Athletisme token </Button>
+                <Button onClick={() => exchangeStart(0,1,1)}>Start an exchange ({exchangeStateToken})</Button>
+                <Button onClick={() => exchangeFound()}>Found an exchange</Button>
+                <Button onClick={() => exchange()}>Validate an exchange</Button>
+                <Button onClick={() => exchangeClose()}>Validate an exchange</Button>
               </Box>
               <Box boxSize='215px'>
                 <Image src='https://bafybeia73py6bbe6ixw2qb7pt7mh7xy7zglcsdf7onpa5pvtwbu7s2tmza.ipfs.nftstorage.link' alt='Aviron' />
                 <Button onClick={() => mintJeton(1,1)} ml="1rem">Mint 1 Aviron NFT ({nbMintedAviron})</Button>
-                <Button onClick={() => exchangeStart(1,0,1)}>Start a exchange Aviron token </Button>
-                <Button onClick={() => exchangeFound()}>Found a exchange Aviron token </Button>
-                <Button onClick={() => exchange()}>Validate a exchange Aviron token </Button>
-                <Button onClick={() => exchangeClose()}>Validate a exchange Aviron token </Button>
+                <Button onClick={() => exchangeStart(1,0,1)}>Start an exchange</Button>
+                <Button onClick={() => exchangeFound()}>Found an exchange</Button>
+                <Button onClick={() => exchange()}>Validate an exchange</Button>
+                <Button onClick={() => exchangeClose()}>Validate an exchange</Button>
               </Box>               
               <Box boxSize='215px'>
                 <Image src='https://bafybeiaxyqpah4wudwsgn2stqx7bwo5pikqdwlvgjogul7eqzpfdz4thn4.ipfs.nftstorage.link' alt='Escrime' />

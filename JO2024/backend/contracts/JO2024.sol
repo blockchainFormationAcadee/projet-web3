@@ -9,12 +9,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @author Franck
-/// @title JO 2024 NFT
-/// @notice You can use this contract for mint JO2024 
-/// @dev Deploy a ERC1155 NFT Collection
+/// @title JO 2024 NFT - Acadee Project
+/// @notice You can use this contract for mint JO2024 token/NFT  
+///         Sport Token is use to collect, exchange and burn to get reward sport NFT
+///         Sport NFT is a reward for example to get a ticket for the JO2024
+/// @dev Deploy a ERC1155 token/NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable {
     string private constant _name = 'JO 2024 Paris';
     string private constant _symbol = 'JO';
+    // Amount tokens to burn and get sport NFT
     uint256 private amountBurn = 1000;
 
     /// The 5 tokens type possible and 5 NFT possible
@@ -25,12 +28,13 @@ contract JO2024 is ERC1155, Pausable, Ownable {
 
     /// workflow exchange state
     enum ExchangeState {
+        None,
         Start,
         ToValidate,
         ToClose
     }
 
-    /// Structure to save the exchange token between 2 collectors 
+    /// Structure to save the exchange token between 2 players 
     struct Exchange {
         uint256 tokenTypeFrom;
         uint256 tokenTypeTo;
@@ -39,17 +43,17 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         ExchangeState exchangeState;
     }
 
-    /// @dev map of address from => to exchange Structure
+    /// Map of address from => to Exchange Structure. The current exchanges
     mapping(address => Exchange) private _mapToExchange;
 
-    modifier onlyExchanger() {
-        require(msg.sender == msg.sender, "only exchanger can call this");
+/// TODO modifier
+    modifier onlySender() {
+        require(msg.sender == msg.sender, "only sender can call this");
         _;
     }
 
     /// @dev Constructor 
     /// set _uri 
-    /// set exchanger
     constructor() ERC1155("https://nftstorage.link/ipfs/bafybeigi75mgneniifyoem7y2nkjqvadwmi6muj2ufehdhbec4mrazpmxa/{id}.json") {
     }
 
@@ -61,19 +65,6 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         require (minted[_tokenType] + 1 <= supplies[_tokenType], "All the NFT have been minted");
         require (_amount > 0, "Mint Zero");
         _mint(msg.sender, _tokenType, _amount, "0x0");
-        minted[_tokenType] += _amount;
-    }
-
-     /// @notice mint function with address
-     /// @param _to The address that will receive the token
-     /// @param _tokenType The type of token
-     /// @param _amount The number to mint
-    function mintWithAddress(address _to, uint256 _tokenType, uint256 _amount) public {
-        require(_to != address(0), "Address not valide");
-        require(_tokenType <= supplies.length-1,"NFT does not exist");
-        require (minted[_tokenType] + 1 <= supplies[_tokenType], "All the NFT have been minted");
-        require (_amount > 0, "Mint Zero");
-        _mint(_to, _tokenType, _amount, "0x0");
         minted[_tokenType] += _amount;
     }
 
@@ -91,22 +82,6 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         _mapToExchange[msg.sender] = Exchange(_tokenTypeFrom, _tokenTypeTo, _amount, address(0), ExchangeState.Start);
     }
 
-    /// @notice start exchange tokens 
-    /// @param _from The address start an exchange
-    /// @param _tokenTypeFrom The type of token from
-    /// @param _tokenTypeTo The type of token to
-    /// @param _amount The amount to exchange
-    function exchangeStartWithAddress(address _from, uint256 _tokenTypeFrom, uint256 _tokenTypeTo, uint256 _amount) public {
-        require(_from != address(0), "Address not valide");
-        require(balanceOf(_from, _tokenTypeFrom) >= _amount, "No tokenType sufficient from");
-        require(_tokenTypeFrom <= 4 && _tokenTypeTo <= 4,"Token does not exist");
-        require(_tokenTypeFrom != _tokenTypeTo,"Tokens equals");
-        require (_amount > 0, "Mint Zero");
-        require(_mapToExchange[_from].exchangeState != ExchangeState.ToValidate, "Exchange to validate");
-        require(_mapToExchange[_from].exchangeState != ExchangeState.ToClose, "Exchange to close");
-        _mapToExchange[_from] = Exchange(_tokenTypeFrom, _tokenTypeTo, _amount, address(0), ExchangeState.Start);
-    }
-
     /// @notice exchange tokens found
     /// @param _from The address who have started the exchange
     function exchangeFound(address _from) public {
@@ -118,41 +93,16 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         setApprovalForAll(_from, true);
     }
 
-    /// @notice exchange tokens found
-    /// @param _from The address who have started the exchange
-    /// @param _to The address who accept the exchange
-    function exchangeFoundWithAddress(address _from, address _to) public {
-        require(_from != address(0), "Address not valide");
-        require(_to != address(0), "Address not valide");
-        require(balanceOf(_to, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "No tokenType sufficient to");
-        require(_mapToExchange[_from].exchangeState == ExchangeState.Start, "Exchange not in start");
-        _mapToExchange[_from].to = _to;
-        _mapToExchange[_from].exchangeState = ExchangeState.ToValidate;
-        setApprovalForAll(_from, true);
-    }
-
     /// @notice exchange tokens type between 2 address
     function exchange() public {
         require(balanceOf(msg.sender, _mapToExchange[msg.sender].tokenTypeFrom) >= _mapToExchange[msg.sender].amount, "No tokenType sufficient from");
         require(balanceOf(_mapToExchange[msg.sender].to, _mapToExchange[msg.sender].tokenTypeTo) >= _mapToExchange[msg.sender].amount, "No tokenType sufficient to");
         require(_mapToExchange[msg.sender].exchangeState == ExchangeState.ToValidate, "Exchange not to validate");
+        require(msg.sender != address(0), "Address not valide = 0");
 
         _mapToExchange[msg.sender].exchangeState = ExchangeState.ToClose;
         safeTransferFrom(msg.sender, _mapToExchange[msg.sender].to, _mapToExchange[msg.sender].tokenTypeFrom, _mapToExchange[msg.sender].amount, "0x0");
         safeTransferFrom(_mapToExchange[msg.sender].to, msg.sender, _mapToExchange[msg.sender].tokenTypeTo, _mapToExchange[msg.sender].amount, "0x0");
-    }
-
-    /// @notice exchange tokens type between 2 address
-    /// @param _from The address who do exchange
-    function exchangeWithAddress(address _from) public {
-        require(_from != address(0), "Address not valide");
-        require(balanceOf(_from, _mapToExchange[_from].tokenTypeFrom) >= _mapToExchange[_from].amount, "No tokenType sufficient from");
-        require(balanceOf(_mapToExchange[_from].to, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "No tokenType sufficient to");
-        require(_mapToExchange[_from].exchangeState == ExchangeState.ToValidate, "Exchange not to validate");
-
-        _mapToExchange[_from].exchangeState = ExchangeState.ToClose;
-        safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].tokenTypeFrom, _mapToExchange[_from].amount, "0x0");
-        safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].tokenTypeTo, _mapToExchange[_from].amount, "0x0");
     }
 
     /// @notice exchangeClose tokens type between 2 address
@@ -170,13 +120,7 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         return(_mapToExchange[msg.sender].exchangeState);
     }
 
-    /// @notice exchangeState With Address
-    /// @param _address The address 
-    function exchangeStateWithAddress(address _address) public view returns (ExchangeState){
-        return(_mapToExchange[_address].exchangeState);
-    }
-
-    /// @notice Burn token to NFT Rewards
+    /// @notice Burn tokens to get NFT Rewards
     /// @param _tokenType The token type to burn
     function burn(uint256 _tokenType) public {
         require(_tokenType <= 4 && _tokenType <= 4,"Token does not exist");

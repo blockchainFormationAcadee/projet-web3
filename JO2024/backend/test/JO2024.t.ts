@@ -8,13 +8,12 @@ let JO2024Factory: JO2024__factory
 describe("JO2024", function () {
   let instanceJO2024: JO2024;
   let owner: SignerWithAddress;
-  let addr1: SignerWithAddress;
-  let addr2: SignerWithAddress;
-  let addrs: SignerWithAddress[];
+  let signer1: SignerWithAddress;
+  let signer2: SignerWithAddress;
 
   before(async () => {
     // Get the Signers here
-    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    [owner, signer1, signer2] = await ethers.getSigners();
     // Create factory
     JO2024Factory = new JO2024__factory(owner);
   });
@@ -30,8 +29,14 @@ describe("JO2024", function () {
     })
   });
 
+  describe("Minting signer1", () => {
+    it("Should mint correctly", async () => {
+      await instanceJO2024.connect(signer1).mint(4, 10);
+    });
+  });
   describe("Minting", () => {
     it("Should mint correctly", async () => {
+      await expect(instanceJO2024.mint(0, 0)).to.be.revertedWith("Mint Zero");
       await instanceJO2024.mint(0, 1);
       await instanceJO2024.mint(1, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
@@ -40,60 +45,67 @@ describe("JO2024", function () {
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(2);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
 
-      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
-      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
 
     });
   });
-
   describe("exchangeStart", () => {
     it("Should exchangeStart correctly", async () => {
       await instanceJO2024.mint(0, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
+      await expect(instanceJO2024.exchangeStart(0, 0, 1)).to.be.revertedWith("Tokens equals");
       await instanceJO2024.exchangeStart(0,1,1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
-      expect(await instanceJO2024.exchangeState()).to.be.equal(0);
+      expect(await instanceJO2024.exchangeState()).to.be.equal(1);
     });
   });
 
   describe("exchangeFound", () => {
     it("Should exchangeFound correctly", async () => {
-      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
-      await instanceJO2024.mintWithAddress(addr2.address, 3, 10);
-      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(10);
-      await instanceJO2024.exchangeStartWithAddress(addr1.address, 4, 3, 10);
-      await instanceJO2024.exchangeFoundWithAddress(addr1.address, addr2.address);
-      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(1);
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      await instanceJO2024.connect(signer2).mint(3, 10);
+      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
+      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
+      await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
+      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(2);
     });
   });
 
   describe("exchange", () => {
     it("Should exchange correctly", async () => {
-      await instanceJO2024.mintWithAddress(addr1.address, 4, 10);
-      await instanceJO2024.mintWithAddress(addr2.address, 3, 10);
-      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(10);
-      await instanceJO2024.exchangeStartWithAddress(addr1.address, 4, 3, 10);
-      await instanceJO2024.exchangeFoundWithAddress(addr1.address, addr2.address);
-      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(1);
-/*
-      // pb car pas le msg.sender
-      await instanceJO2024.exchangeWithAddress(addr1.address);
+      
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      await instanceJO2024.connect(signer2).mint(3, 10);
+      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
+      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
+      await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
 
-      expect(await instanceJO2024.balanceOf(addr1.address, 4)).to.be.equal(0);
-      expect(await instanceJO2024.balanceOf(addr2.address, 3)).to.be.equal(0);
-      expect(await instanceJO2024.balanceOf(addr1.address, 3)).to.be.equal(10);
-      expect(await instanceJO2024.balanceOf(addr2.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.exchangeStateWithAddress(addr1.address)).to.be.equal(2);
-*/
+      await instanceJO2024.connect(signer1).exchange();
+
+      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(0);
+      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(0);
+      expect(await instanceJO2024.balanceOf(signer1.address, 3)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(signer2.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(3);
+
     });
   });
 
   describe("exchangeClose", () => {
     it("Should exchangeClose correctly", async () => {
-      //expect(await instanceJO2024.exchangeState()).to.be.equal(2);
-      //await instanceJO2024.exchangeClose(addr1.address);
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      await instanceJO2024.connect(signer2).mint(3, 10);
+      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
+      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
+      await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
+
+      await instanceJO2024.connect(signer1).exchange();
+      await instanceJO2024.connect(signer2).exchangeClose(signer1.address);
+      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(0);
     });
   });
 
@@ -109,11 +121,11 @@ describe("JO2024", function () {
 
   describe("Pause", () => {
     it("Shouldn't pause if not owner", async () => {
-      await expect(instanceJO2024.connect(addr1).pause()).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(instanceJO2024.connect(signer1).pause()).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Shouldn't unpause if not owner", async () => {
-      await expect(instanceJO2024.connect(addr1).unpause()).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(instanceJO2024.connect(signer1).unpause()).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Should pause correctly", async () => {
@@ -130,3 +142,4 @@ describe("JO2024", function () {
 
   });
 });
+
