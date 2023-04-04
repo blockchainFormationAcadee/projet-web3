@@ -8,13 +8,17 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+interface IRecursive {
+    function exchangeByContract(address) external;
+}
+
 /// @author Franck
 /// @title JO 2024 NFT - Acadee Project
 /// @notice You can use this contract for mint JO2024 token/NFT  
 ///         Sport Token is use to collect, exchange and burn to get reward sport NFT
 ///         Sport NFT is a reward for example to get a ticket for the JO2024
 /// @dev Deploy a ERC1155 token/NFT Collection
-contract JO2024 is ERC1155, Pausable, Ownable {
+contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     string private constant _name = 'JO 2024 Paris';
     string private constant _symbol = 'JO';
     // Amount tokens to burn and get sport NFT
@@ -28,9 +32,8 @@ contract JO2024 is ERC1155, Pausable, Ownable {
 
     /// workflow exchange state
     enum ExchangeState {
-        None,
+        Zero,
         Start,
-        ToValidate,
         ToClose
     }
 
@@ -77,42 +80,43 @@ contract JO2024 is ERC1155, Pausable, Ownable {
         require(_tokenTypeFrom <= 4 && _tokenTypeTo <= 4,"Token does not exist");
         require(_tokenTypeFrom != _tokenTypeTo,"Tokens equals");
         require (_amount > 0, "Mint Zero");
-        require(_mapToExchange[msg.sender].exchangeState != ExchangeState.ToValidate, "Exchange to validate");
         require(_mapToExchange[msg.sender].exchangeState != ExchangeState.ToClose, "Exchange to close");
         _mapToExchange[msg.sender] = Exchange(_tokenTypeFrom, _tokenTypeTo, _amount, address(0), ExchangeState.Start);
+        setApprovalForAll(address(this), true);
     }
 
     /// @notice exchange tokens found
     /// @param _from The address who have started the exchange
     function exchangeFound(address _from) public {
         require(_from != address(0), "Address not valide");
-        require(balanceOf(msg.sender, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "No tokenType sufficient to");
+        require(balanceOf(msg.sender, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : to");
+        require(balanceOf(_from, _mapToExchange[_from].tokenTypeFrom) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : from");
         require(_mapToExchange[_from].exchangeState == ExchangeState.Start, "Exchange not in start");
         _mapToExchange[_from].to = msg.sender;
-        _mapToExchange[_from].exchangeState = ExchangeState.ToValidate;
-        setApprovalForAll(_from, true);
+        setApprovalForAll(address(this), true);
+        exchangeToDoByContract(_from);
+        setApprovalForAll(address(this), false);
     }
 
-    /// @notice exchange tokens type between 2 address
-    function exchange() public {
-        require(balanceOf(msg.sender, _mapToExchange[msg.sender].tokenTypeFrom) >= _mapToExchange[msg.sender].amount, "No tokenType sufficient from");
-        require(balanceOf(_mapToExchange[msg.sender].to, _mapToExchange[msg.sender].tokenTypeTo) >= _mapToExchange[msg.sender].amount, "No tokenType sufficient to");
-        require(_mapToExchange[msg.sender].exchangeState == ExchangeState.ToValidate, "Exchange not to validate");
-        require(msg.sender != address(0), "Address not valide = 0");
-
-        _mapToExchange[msg.sender].exchangeState = ExchangeState.ToClose;
-        safeTransferFrom(msg.sender, _mapToExchange[msg.sender].to, _mapToExchange[msg.sender].tokenTypeFrom, _mapToExchange[msg.sender].amount, "0x0");
-        safeTransferFrom(_mapToExchange[msg.sender].to, msg.sender, _mapToExchange[msg.sender].tokenTypeTo, _mapToExchange[msg.sender].amount, "0x0");
+    /// @notice exchange by the contract tokens type between 2 address      
+    /// @param _from The address who have started the exchange
+    function exchangeByContract(address _from) external override {
+        require(msg.sender == address(this), "Only contract address could exchange");
+        _mapToExchange[_from].exchangeState = ExchangeState.ToClose;
+        safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].tokenTypeFrom, _mapToExchange[_from].amount, "0x0");
+        safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].tokenTypeTo, _mapToExchange[_from].amount, "0x0");
+    }
+    
+    function exchangeToDoByContract(address _from) private {
+        IRecursive(address(this)).exchangeByContract(_from);
     }
 
     /// @notice exchangeClose tokens type between 2 address
-    function exchangeClose(address _from) public {
-        require(_from != address(0), "Address not valide");
-        require(_mapToExchange[_from].to == msg.sender, "Not possible to close");
-        require(_mapToExchange[_from].exchangeState == ExchangeState.ToClose, "Exchange not to close");
-
-        delete _mapToExchange[_from];
-        setApprovalForAll(_from, false);
+    function exchangeClose() public {
+        require(msg.sender != address(0), "Address not valide");
+        require(_mapToExchange[msg.sender].exchangeState == ExchangeState.ToClose, "Exchange not to close");
+        delete _mapToExchange[msg.sender];
+        setApprovalForAll(address(this), false);
     }
 
     /// @notice exchangeState

@@ -69,28 +69,13 @@ describe("JO2024", function () {
       expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
       await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
       await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
-      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(2);
-    });
-  });
-
-  describe("exchange", () => {
-    it("Should exchange correctly", async () => {
-      
-      await instanceJO2024.connect(signer1).mint(4, 10);
-      await instanceJO2024.connect(signer2).mint(3, 10);
-      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
-      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
-      await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
-
-      await instanceJO2024.connect(signer1).exchange();
 
       expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(0);
-      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(0);
       expect(await instanceJO2024.balanceOf(signer1.address, 3)).to.be.equal(10);
+      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(0);
       expect(await instanceJO2024.balanceOf(signer2.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(3);
 
+      expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(2);
     });
   });
 
@@ -98,16 +83,13 @@ describe("JO2024", function () {
     it("Should exchangeClose correctly", async () => {
       await instanceJO2024.connect(signer1).mint(4, 10);
       await instanceJO2024.connect(signer2).mint(3, 10);
-      expect(await instanceJO2024.balanceOf(signer1.address, 4)).to.be.equal(10);
-      expect(await instanceJO2024.balanceOf(signer2.address, 3)).to.be.equal(10);
       await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
       await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
-
-      await instanceJO2024.connect(signer1).exchange();
-      await instanceJO2024.connect(signer2).exchangeClose(signer1.address);
+      await instanceJO2024.connect(signer1).exchangeClose();
       expect(await instanceJO2024.connect(signer1).exchangeState()).to.be.equal(0);
     });
   });
+
 
   describe("burn", () => {
     it("Should burn correctly", async () => {
