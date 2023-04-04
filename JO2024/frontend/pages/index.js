@@ -2,10 +2,10 @@ import { Flex, Text, Button, useToast, Image, Box } from '@chakra-ui/react';
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
-// Dev : The ABI json will be stored into /config/JO2024.json
+// Dev : In production the ABI json will be stored into /config/JO2024.json
 import Contract from '../../backend/artifacts/contracts/JO2024.sol/JO2024.json';
 import LogoConnect from 'components/LogoConnect'
-import { contractAddress } from 'config/constants';
+import { formAcadeeAddress, contractAddress } from 'config/constants';
 
 export default function Home() {
 
@@ -38,7 +38,8 @@ export default function Home() {
     setNbMintedBasketball(nbMinted.toString());
     nbMinted = await contract.balanceOf(address, 4);
     setNbMintedBoxe(nbMinted.toString());
-    setExchangeStateToken(await contract.exchangeState());
+    let stateToken = await contract.exchangeState();
+    setExchangeStateToken(stateToken.toString());
   }
 
   const mintJeton = async(type, number) => {
@@ -95,7 +96,6 @@ export default function Home() {
       console.log("exchangeFound");
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       let transaction = await contract.exchangeFound(formAcadeeAddress);
-      console.log("transaction : "+transaction);
       transaction.wait();
       toast({
         title: 'Félicitations !',
@@ -115,63 +115,15 @@ export default function Home() {
       })
     }
   }
-  const exchange = async() => {
-    try {
-      console.log("exchange");
-      const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
-      let transaction = await contract.exchange();
-      transaction.wait();
-      toast({
-        title: 'Félicitations !',
-        description: "Vous avez bien echangé un échange de vos jeton JO2024 !",
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-    catch {
-      toast({
-        title: 'Erreur !',
-        description: "Une erreur est survenue",
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-  }
   const exchangeClose = async() => {
     try {
       console.log("exchangeClose");
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
-      let transaction = await contract.exchangeClose(formAcadeeAddress);
+      let transaction = await contract.exchangeClose();
       transaction.wait();
       toast({
         title: 'Félicitations !',
         description: "Vous avez bien fermé l'échange de vos jeton JO2024 !",
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-    catch {
-      toast({
-        title: 'Erreur !',
-        description: "Une erreur est survenue",
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-  }
-  const exchangeState = async() => {
-    try {
-      console.log("exchangeState");
-      const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
-      let transaction = await contract.exchangeState();
-      transaction.wait();
-      toast({
-        title: 'Félicitations !',
-        description: "Vous avez bien recupéré l'état de l'échange!",
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -200,16 +152,14 @@ export default function Home() {
                 <Button onClick={() => mintJeton(0,1)}>Mint 1 Athletisme NFT ({nbMintedAthletisme})</Button>
                 <Button onClick={() => exchangeStart(0,1,1)}>Start an exchange ({exchangeStateToken})</Button>
                 <Button onClick={() => exchangeFound()}>Found an exchange</Button>
-                <Button onClick={() => exchange()}>Validate an exchange</Button>
-                <Button onClick={() => exchangeClose()}>Validate an exchange</Button>
+                <Button onClick={() => exchangeClose()}>Close an exchange</Button>
               </Box>
               <Box boxSize='215px'>
                 <Image src='https://bafybeia73py6bbe6ixw2qb7pt7mh7xy7zglcsdf7onpa5pvtwbu7s2tmza.ipfs.nftstorage.link' alt='Aviron' />
                 <Button onClick={() => mintJeton(1,1)} ml="1rem">Mint 1 Aviron NFT ({nbMintedAviron})</Button>
                 <Button onClick={() => exchangeStart(1,0,1)}>Start an exchange</Button>
                 <Button onClick={() => exchangeFound()}>Found an exchange</Button>
-                <Button onClick={() => exchange()}>Validate an exchange</Button>
-                <Button onClick={() => exchangeClose()}>Validate an exchange</Button>
+                <Button onClick={() => exchangeClose()}>Close an exchange</Button>
               </Box>               
               <Box boxSize='215px'>
                 <Image src='https://bafybeiaxyqpah4wudwsgn2stqx7bwo5pikqdwlvgjogul7eqzpfdz4thn4.ipfs.nftstorage.link' alt='Escrime' />

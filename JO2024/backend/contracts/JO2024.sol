@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 
 interface IRecursive {
     function exchangeByContract(address) external;
@@ -64,6 +65,7 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
      /// @param _tokenType The type of token
      /// @param _amount The number to mint
     function mint(uint256 _tokenType, uint256 _amount) public {
+        console.log("mint _tokenType %s _amount %s", _tokenType, _amount);
         require(_tokenType <= supplies.length-1,"NFT does not exist");
         require (minted[_tokenType] + 1 <= supplies[_tokenType], "All the NFT have been minted");
         require (_amount > 0, "Mint Zero");
@@ -71,11 +73,12 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         minted[_tokenType] += _amount;
     }
 
-    /// @notice start exchange tokens 
+    /// @notice start exchange tokens by msg.sender (from)
     /// @param _tokenTypeFrom The type of token from
     /// @param _tokenTypeTo The type of token to
     /// @param _amount The amount to exchange
     function exchangeStart(uint256 _tokenTypeFrom, uint256 _tokenTypeTo, uint256 _amount) public {
+        console.log("exchangeStart _tokenTypeFrom %s _tokenTypeTo %s _amount %s", _tokenTypeFrom, _tokenTypeTo, _amount);
         require(balanceOf(msg.sender, _tokenTypeFrom) >= _amount, "No tokenType sufficient from");
         require(_tokenTypeFrom <= 4 && _tokenTypeTo <= 4,"Token does not exist");
         require(_tokenTypeFrom != _tokenTypeTo,"Tokens equals");
@@ -85,9 +88,10 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         setApprovalForAll(address(this), true);
     }
 
-    /// @notice exchange tokens found
+    /// @notice exchange tokens found by msg.sender (to)
     /// @param _from The address who have started the exchange
     function exchangeFound(address _from) public {
+        console.log("exchangeFound _from %s", _from);
         require(_from != address(0), "Address not valide");
         require(balanceOf(msg.sender, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : to");
         require(balanceOf(_from, _mapToExchange[_from].tokenTypeFrom) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : from");
@@ -100,14 +104,19 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
 
     /// @notice exchange by the contract tokens type between 2 address      
     /// @param _from The address who have started the exchange
+    /// @dev Function external for that the contrat become  the msg.sender
     function exchangeByContract(address _from) external override {
+        console.log("exchangeByContract _from %s", _from);
         require(msg.sender == address(this), "Only contract address could exchange");
         _mapToExchange[_from].exchangeState = ExchangeState.ToClose;
         safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].tokenTypeFrom, _mapToExchange[_from].amount, "0x0");
         safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].tokenTypeTo, _mapToExchange[_from].amount, "0x0");
     }
     
+    /// @dev Call external function to become msg.sender     
+    /// @param _from The address who have started the exchange
     function exchangeToDoByContract(address _from) private {
+        console.log("exchangeToDoByContract _from %s", _from);
         IRecursive(address(this)).exchangeByContract(_from);
     }
 
