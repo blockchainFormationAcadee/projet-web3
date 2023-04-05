@@ -1,6 +1,6 @@
 {
     "description": "This is a collection of Athletisme NFTs. Olympic games Paris 2024",
-    "external_url": "https://forum.openzeppelin.com",
+    "external_url": "https://www.paris2024.org/fr/",
     "image": "https://bafybeib2qiimyx64cuopeceksxbzcejwctofni4s33zsgoqunrk22dczye.ipfs.nftstorage.link",
     "name": "Athletisme",
     "attributes": [{"trait_type": "Type","value": "Sport"},{"trait_type": "Category","value": "Athletisme"},{"trait_type": "Level","value": "Top"}]

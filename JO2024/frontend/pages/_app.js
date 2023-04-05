@@ -16,7 +16,6 @@ const { chains, provider } = configureChains(
   [hardhat, polygonMumbai],
   [
     alchemyProvider({ apiKey: apiKeyAlchemyProvider }),
-    //infuraProvider({ apiKey: 'yourInfuraApiKey' }),
     publicProvider()
   ]
 );

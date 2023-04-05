@@ -1,0 +1,7 @@
+{
+    "description": "This is a collection of Basketball NFTs. Olympic games Paris 2024",
+    "external_url": "https://www.paris2024.org/fr/",
+    "image": "https://bafkreiezqeu42omeontkiqwirz67amqfuobnywox4k4qmvwfuhltomzn7i.ipfs.nftstorage.link",
+    "name": "Unique Basketball",
+    "attributes": [{"trait_type": "Type","value": "Sport"},{"trait_type": "Category","value": "Basketball"},{"trait_type": "Level","value": "Unique"}]
+}

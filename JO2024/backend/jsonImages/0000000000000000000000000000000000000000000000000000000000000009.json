@@ -1,0 +1,7 @@
+{
+    "description": "This is a collection of Boxe NFTs. Olympic games Paris 2024",
+    "external_url": "https://www.paris2024.org/fr/",
+    "image": "https://bafkreihfpokj3en4lxl732qmfj2soaswlcvdaej7id6alyp6y7tbmugl7y.ipfs.nftstorage.link",
+    "name": "Unique Boxe",
+    "attributes": [{"trait_type": "Type","value": "Sport"},{"trait_type": "Category","value": "Boxe"},{"trait_type": "Level","value": "Unique"}]
+}

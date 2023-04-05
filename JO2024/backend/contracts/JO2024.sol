@@ -15,19 +15,19 @@ interface IRecursive {
 
 /// @author Franck
 /// @title JO 2024 NFT - Acadee Project
-/// @notice You can use this contract for mint JO2024 token/NFT  
-///         Sport Token is use to collect, exchange and burn to get reward sport NFT
-///         Sport NFT is a reward for example to get a ticket for the JO2024
-/// @dev Deploy a ERC1155 token/NFT Collection
+/// @notice You can use this contract for mint JO2024 NFT  
+///         Sport fungible NFT is use to collect, exchange and burn to get reward sport NFT
+///         Sport unique NFT is a reward for example to get a ticket for the JO2024
+/// @dev Deploy a ERC1155 NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     string private constant _name = 'JO 2024 Paris';
     string private constant _symbol = 'JO';
-    // Amount tokens to burn and get sport NFT
-    uint256 private amountBurn = 1000;
+    // Amount fungible NFT to burn and get an unique sport NFT
+    uint256 private amountBurn = 100;
 
-    /// The 5 tokens type possible and 5 NFT possible
-    /// AthletismeToken = 0, AvironToken = 1, EscrimeToken = 2, BasketballToken = 3, BoxeToken = 4
-    /// AthletismeNFT = 5, AvironNFT = 6, EscrimeNFT = 7, BasketballNFT = 8, BasketballToken = 9, BoxeNFT = 10
+    /// The 5 fungible NFTs type possible and 5 unique NFT possible :
+    /// AthletismeNFT = 0, AvironNFT = 1, EscrimeNFT = 2, BasketballNFT = 3, BoxeNFT = 4
+    /// UniqueAthletismeNFT = 5, UniqueAvironNFT = 6, UniqueEscrimeNFT = 7, UniqueBasketballNFT = 8, UniqueBasketballNFT = 9, UniqueBoxeNFT = 10
     uint256[] private supplies = [10000,10000,10000,10000,10000,1,1,1,1,1];
     uint256[] private minted = [0,0,0,0,0,0,0,0,0,0];
 
@@ -38,10 +38,10 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         ToClose
     }
 
-    /// Structure to save the exchange token between 2 players 
+    /// Structure to save the exchange fongible NFTs between 2 players 
     struct Exchange {
-        uint256 tokenTypeFrom;
-        uint256 tokenTypeTo;
+        uint256 TypeFrom;
+        uint256 TypeTo;
         uint256 amount;
         address to;
         ExchangeState exchangeState;
@@ -50,51 +50,45 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// Map of address from => to Exchange Structure. The current exchanges
     mapping(address => Exchange) private _mapToExchange;
 
-/// TODO modifier
-    modifier onlySender() {
-        require(msg.sender == msg.sender, "only sender can call this");
-        _;
-    }
-
     /// @dev Constructor 
     /// set _uri 
-    constructor() ERC1155("https://nftstorage.link/ipfs/bafybeigi75mgneniifyoem7y2nkjqvadwmi6muj2ufehdhbec4mrazpmxa/{id}.json") {
+    constructor() ERC1155("https://nftstorage.link/ipfs/bafybeie4rhk5qbnog5vbtvbzk6pcyweaxug7shyqrin6hum32x42vbllke/{id}.json") {
     }
 
-     /// @notice mint function
-     /// @param _tokenType The type of token
-     /// @param _amount The number to mint
-    function mint(uint256 _tokenType, uint256 _amount) public {
-        console.log("mint _tokenType %s _amount %s", _tokenType, _amount);
-        require(_tokenType <= supplies.length-1,"NFT does not exist");
-        require (minted[_tokenType] + 1 <= supplies[_tokenType], "All the NFT have been minted");
+     /// @notice Mint function by one type 
+     /// @param _Type The type of NFT
+     /// @param _amount The amount to mint
+    function mint(uint256 _Type, uint256 _amount) public whenNotPaused {
+        console.log("mint _Type %s _amount %s", _Type, _amount);
+        require(_Type <= supplies.length-1,"NFT does not exist");
+        require (minted[_Type] + 1 <= supplies[_Type], "All the NFT have been minted");
         require (_amount > 0, "Mint Zero");
-        _mint(msg.sender, _tokenType, _amount, "0x0");
-        minted[_tokenType] += _amount;
+        _mint(msg.sender, _Type, _amount, "0x0");
+        minted[_Type] += _amount;
     }
 
-    /// @notice start exchange tokens by msg.sender (from)
-    /// @param _tokenTypeFrom The type of token from
-    /// @param _tokenTypeTo The type of token to
+    /// @notice start exchange NFTs by msg.sender (from)
+    /// @param _TypeFrom The type of NFT from
+    /// @param _TypeTo The type of NFT to
     /// @param _amount The amount to exchange
-    function exchangeStart(uint256 _tokenTypeFrom, uint256 _tokenTypeTo, uint256 _amount) public {
-        console.log("exchangeStart _tokenTypeFrom %s _tokenTypeTo %s _amount %s", _tokenTypeFrom, _tokenTypeTo, _amount);
-        require(balanceOf(msg.sender, _tokenTypeFrom) >= _amount, "No tokenType sufficient from");
-        require(_tokenTypeFrom <= 4 && _tokenTypeTo <= 4,"Token does not exist");
-        require(_tokenTypeFrom != _tokenTypeTo,"Tokens equals");
+    function exchangeStart(uint256 _TypeFrom, uint256 _TypeTo, uint256 _amount) public {
+        console.log("exchangeStart _TypeFrom %s _TypeTo %s _amount %s", _TypeFrom, _TypeTo, _amount);
+        require(balanceOf(msg.sender, _TypeFrom) >= _amount, "No NFTType sufficient from");
+        require(_TypeFrom <= 4 && _TypeTo <= 4,"NFT does not exist");
+        require(_TypeFrom != _TypeTo,"NFTs equals");
         require (_amount > 0, "Mint Zero");
         require(_mapToExchange[msg.sender].exchangeState != ExchangeState.ToClose, "Exchange to close");
-        _mapToExchange[msg.sender] = Exchange(_tokenTypeFrom, _tokenTypeTo, _amount, address(0), ExchangeState.Start);
+        _mapToExchange[msg.sender] = Exchange(_TypeFrom, _TypeTo, _amount, address(0), ExchangeState.Start);
         setApprovalForAll(address(this), true);
     }
 
-    /// @notice exchange tokens found by msg.sender (to)
+    /// @notice exchange NFTs found by msg.sender (to)
     /// @param _from The address who have started the exchange
     function exchangeFound(address _from) public {
         console.log("exchangeFound _from %s", _from);
         require(_from != address(0), "Address not valide");
-        require(balanceOf(msg.sender, _mapToExchange[_from].tokenTypeTo) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : to");
-        require(balanceOf(_from, _mapToExchange[_from].tokenTypeFrom) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : from");
+        require(balanceOf(msg.sender, _mapToExchange[_from].TypeTo) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : to");
+        require(balanceOf(_from, _mapToExchange[_from].TypeFrom) >= _mapToExchange[_from].amount, "Insufficient balance for transfer : from");
         require(_mapToExchange[_from].exchangeState == ExchangeState.Start, "Exchange not in start");
         _mapToExchange[_from].to = msg.sender;
         setApprovalForAll(address(this), true);
@@ -102,15 +96,15 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         setApprovalForAll(address(this), false);
     }
 
-    /// @notice exchange by the contract tokens type between 2 address      
+    /// @notice exchange by the contract NFTs type between 2 address      
     /// @param _from The address who have started the exchange
     /// @dev Function external for that the contrat become  the msg.sender
     function exchangeByContract(address _from) external override {
         console.log("exchangeByContract _from %s", _from);
         require(msg.sender == address(this), "Only contract address could exchange");
         _mapToExchange[_from].exchangeState = ExchangeState.ToClose;
-        safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].tokenTypeFrom, _mapToExchange[_from].amount, "0x0");
-        safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].tokenTypeTo, _mapToExchange[_from].amount, "0x0");
+        safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].TypeFrom, _mapToExchange[_from].amount, "0x0");
+        safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].TypeTo, _mapToExchange[_from].amount, "0x0");
     }
     
     /// @dev Call external function to become msg.sender     
@@ -120,8 +114,9 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         IRecursive(address(this)).exchangeByContract(_from);
     }
 
-    /// @notice exchangeClose tokens type between 2 address
+    /// @notice exchangeClose NFTs type between 2 address
     function exchangeClose() public {
+        console.log("exchangeClose msg.sender %s", msg.sender);
         require(msg.sender != address(0), "Address not valide");
         require(_mapToExchange[msg.sender].exchangeState == ExchangeState.ToClose, "Exchange not to close");
         delete _mapToExchange[msg.sender];
@@ -132,24 +127,27 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     function exchangeState() public view returns (ExchangeState){
         return(_mapToExchange[msg.sender].exchangeState);
     }
-
-    /// @notice Burn tokens to get NFT Rewards
-    /// @param _tokenType The token type to burn
-    function burn(uint256 _tokenType) public {
-        require(_tokenType <= 4 && _tokenType <= 4,"Token does not exist");
-        require(balanceOf(msg.sender, _tokenType) >= amountBurn, "No tokenType sufficient to burn");
-        _burn(msg.sender, _tokenType, amountBurn);
-        mint(_tokenType+5, 1);
+    
+    /// @notice Burn fungible NFTs to get NFT Rewards
+    /// @param _Type The NFT type to burn
+    function burn(uint256 _Type) public {
+        console.log("burn msg.sender %s _Type %s", msg.sender, _Type);
+        require(_Type <= 4,"NFT does not exist");
+        require(balanceOf(msg.sender, _Type) >= amountBurn, "No NFTType sufficient to burn");
+        require (minted[_Type+5] + 1 <= supplies[_Type+5], "The unique NFT have been minted");
+        _burn(msg.sender, _Type, amountBurn);
+        // mint unique NFT of type
+        mint(_Type+5, 1);
     }
 
-    /// @dev Gets the token name.
-    /// @return string representing the token name
+    /// @dev Gets the NFT name.
+    /// @return string representing the NFT name
     function name() external pure returns (string memory) {
         return _name;
     }
 
-    /// @dev Gets the token symbol.
-    /// @return string representing the token symbol
+    /// @dev Gets the NFT symbol.
+    /// @return string representing the NFT symbol
     function symbol() external pure returns (string memory) {
         return _symbol;
     }
@@ -163,5 +161,4 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     function unpause() external onlyOwner {
         _unpause();
     }
-
 }

@@ -18,6 +18,11 @@ export default function Home() {
   const [nbMintedEscrime, setNbMintedEscrime] = useState(null)
   const [nbMintedBasketball, setNbMintedBasketball] = useState(null)
   const [nbMintedBoxe, setNbMintedBoxe] = useState(null)
+  const [uniqueAthletisme, setUniqueAthletisme] = useState(null)
+  const [uniqueAviron, setUniqueAviron] = useState(null)
+  const [uniqueEscrime, setUniqueEscrime] = useState(null)
+  const [uniqueBasketball, setUniqueBasketball] = useState(null)
+  const [uniqueBoxe, setUniqueBoxe] = useState(null)
   const [exchangeStateToken, setExchangeStateToken] = useState(null)
 
   useEffect(() => {
@@ -38,20 +43,30 @@ export default function Home() {
     setNbMintedBasketball(nbMinted.toString());
     nbMinted = await contract.balanceOf(address, 4);
     setNbMintedBoxe(nbMinted.toString());
+    nbMinted = await contract.balanceOf(address, 5);
+    setUniqueAthletisme(nbMinted.toString());
+    nbMinted = await contract.balanceOf(address, 6);
+    setUniqueAviron(nbMinted.toString());
+    nbMinted = await contract.balanceOf(address, 7);
+    setUniqueEscrime(nbMinted.toString());
+    nbMinted = await contract.balanceOf(address, 8);
+    setUniqueBasketball(nbMinted.toString());
+    nbMinted = await contract.balanceOf(address, 9);
+    setUniqueBoxe(nbMinted.toString());
     let stateToken = await contract.exchangeState();
     setExchangeStateToken(stateToken.toString());
   }
 
-  const mintJeton = async(type, number) => {
+  const mint = async(type, amount) => {
     try {
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       // type : Athletisme = 0 Aviron = 1 Escrime = 2 Basketball = 3 Boxe = 4
-      let transaction = await contract.mint(type, number);
+      let transaction = await contract.mint(type, amount);
       transaction.wait();
       getDatas();
       toast({
         title: 'Félicitations !',
-        description: "Vous avez bien minté votre jeton JO2024 !",
+        description: "Vous avez bien minté votre NFT JO2024 !",
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -73,9 +88,11 @@ export default function Home() {
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       let transaction = await contract.exchangeStart(typeFrom, typeTo, amount);
       transaction.wait();
+      let stateToken = await contract.exchangeState();
+      setExchangeStateToken(stateToken.toString());
       toast({
         title: 'Félicitations !',
-        description: "Vous avez bien demandé un échange de vos jeton JO2024 !",
+        description: "Vous avez bien demandé un échange de vos NFT JO2024 !",
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -97,9 +114,10 @@ export default function Home() {
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       let transaction = await contract.exchangeFound(formAcadeeAddress);
       transaction.wait();
+      getDatas();
       toast({
         title: 'Félicitations !',
-        description: "Vous avez bien trouvé un échange de vos jeton JO2024 !",
+        description: "Vous avez bien trouvé un échange de vos NFT JO2024 !",
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -121,9 +139,36 @@ export default function Home() {
       const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
       let transaction = await contract.exchangeClose();
       transaction.wait();
+      let stateToken = await contract.exchangeState();
+      setExchangeStateToken(stateToken.toString());
       toast({
         title: 'Félicitations !',
-        description: "Vous avez bien fermé l'échange de vos jeton JO2024 !",
+        description: "Vous avez bien fermé l'échange de vos NFT JO2024 !",
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+    catch {
+      toast({
+        title: 'Erreur !',
+        description: "Une erreur est survenue",
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }
+  const burn = async(type) => {
+    try {
+      console.log("burn type= "+type);
+      const contract = new ethers.Contract(contractAddress, Contract.abi, signer);
+      let transaction = await contract.burn(type);
+      transaction.wait();
+      getDatas();
+      toast({
+        title: 'Félicitations !',
+        description: "Vous avez bien réalisé votre conversion !",
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -142,41 +187,44 @@ export default function Home() {
   return (
     <>
       < LogoConnect />
-      <Flex justifyContent="center" alignItems="center" height="50vh">
+      <Flex>
         {(isConnected ? (
           <Flex direction="column">
-            <Text align="center">Tu es connecté et tu peux collecter des jetons JO2024</Text>
+            <Text align="center">Tu es connecté et tu peux collecter des NFTs JO2024</Text>
             <Flex mt="2rem">
-              <Box boxSize='215px'>
+              <Box boxSize='25%'>
                 <Image src='https://bafybeib2qiimyx64cuopeceksxbzcejwctofni4s33zsgoqunrk22dczye.ipfs.nftstorage.link' alt='Athletisme' />
-                <Button onClick={() => mintJeton(0,1)}>Mint 1 Athletisme NFT ({nbMintedAthletisme})</Button>
-                <Button onClick={() => exchangeStart(0,1,1)}>Start an exchange ({exchangeStateToken})</Button>
-                <Button onClick={() => exchangeFound()}>Found an exchange</Button>
+                <Button onClick={() => mint(0,50)}>Mint 50 Athletisme NFT ({nbMintedAthletisme})</Button><br/><br/>
+                <Button onClick={() => exchangeStart(0,1,50)}>Start an exchange (50) State={exchangeStateToken}</Button><br/>
                 <Button onClick={() => exchangeClose()}>Close an exchange</Button>
               </Box>
-              <Box boxSize='215px'>
+              <Box boxSize='25%'>
                 <Image src='https://bafybeia73py6bbe6ixw2qb7pt7mh7xy7zglcsdf7onpa5pvtwbu7s2tmza.ipfs.nftstorage.link' alt='Aviron' />
-                <Button onClick={() => mintJeton(1,1)} ml="1rem">Mint 1 Aviron NFT ({nbMintedAviron})</Button>
-                <Button onClick={() => exchangeStart(1,0,1)}>Start an exchange</Button>
-                <Button onClick={() => exchangeFound()}>Found an exchange</Button>
-                <Button onClick={() => exchangeClose()}>Close an exchange</Button>
+                <Button onClick={() => mint(1,60)} ml="1rem">Mint 60 Aviron NFT ({nbMintedAviron})</Button><br/><br/>
+                <Button onClick={() => exchangeFound()}>Exchange</Button><br/><br/><br/>
+                <Button onClick={() => burn(1)}>Convertir 100 en Unique</Button>
+                <Text align="center">{uniqueAviron} unique Aviron</Text>
               </Box>               
-              <Box boxSize='215px'>
+              <Box boxSize='25%'>
                 <Image src='https://bafybeiaxyqpah4wudwsgn2stqx7bwo5pikqdwlvgjogul7eqzpfdz4thn4.ipfs.nftstorage.link' alt='Escrime' />
-                <Button onClick={() => mintJeton(2,1)} ml="1rem">Mint 1 Escrime NFT ({nbMintedEscrime})</Button>
+                <Button onClick={() => mint(2,70)} ml="1rem">Mint 70 Escrime NFT ({nbMintedEscrime})</Button>
               </Box>               
-              <Box boxSize='215px'>
+              <Box boxSize='25%'>
                 <Image src='https://bafybeihmmfxyfmabv3y2xiiyixlmcwt7ypatplizjlv5zmqi5sfkltwiqm.ipfs.nftstorage.link' alt='Basketball' />
-                <Button onClick={() => mintJeton(3,1)} ml="1rem">Mint 1 Basketball NFT ({nbMintedBasketball})</Button>
+                <Button onClick={() => mint(3,80)} ml="1rem">Mint 80 Basketball NFT ({nbMintedBasketball})</Button>
               </Box>               
-              <Box boxSize='215px'>
+              <Box boxSize='25%'>
                 <Image src='https://bafybeib52dpfcgb4lhi2ggnopx7ot7eah4zv3tw7zp4hv3ip5yvtqspzhq.ipfs.nftstorage.link' alt='Boxe' />
-                <Button onClick={() => mintJeton(4,1)} ml="1rem">Mint 1 Boxe NFT ({nbMintedBoxe})</Button>
+                <Button onClick={() => mint(4,100)} ml="1rem">Mint 100 Boxe NFT ({nbMintedBoxe})</Button>
               </Box>
             </Flex>
           </Flex>
         ) : (
-          <Text>Merci de vous connecter avec votre Wallet sur votre navigateur.</Text>
+          <Box boxSize='100%' margin="100">
+              <Text align="center">Plateform de collection NFTs des Jeux Olympiques Paris 2024.<br/>
+                                   Collectionne, échange et gagne des NFTs uniques.<br/>
+                                   Merci de vous connecter avec le bouton 'Connect Wallet'.</Text>
+          </Box>          
         ))}
       </Flex>
     </>

@@ -54,7 +54,7 @@ describe("JO2024", function () {
     it("Should exchangeStart correctly", async () => {
       await instanceJO2024.mint(0, 1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
-      await expect(instanceJO2024.exchangeStart(0, 0, 1)).to.be.revertedWith("Tokens equals");
+      await expect(instanceJO2024.exchangeStart(0, 0, 1)).to.be.revertedWith("NFTs equals");
       await instanceJO2024.exchangeStart(0,1,1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       expect(await instanceJO2024.exchangeState()).to.be.equal(1);
@@ -95,8 +95,9 @@ describe("JO2024", function () {
     it("Should burn correctly", async () => {
       await instanceJO2024.mint(1, 10000);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(10000);
+      // burn type 1 amountBurn=100
       await instanceJO2024.burn(1);
-      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(9000);
+      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(9900);
       expect(await instanceJO2024.balanceOf(owner.address, 6)).to.be.equal(1);
     });
   });
@@ -118,6 +119,8 @@ describe("JO2024", function () {
     it("Should unpause correctly", async () => {
       await instanceJO2024.pause();
       expect(await instanceJO2024.paused()).to.be.equal(true);
+      // await expect(await instanceJO2024.connect(signer1).mint(0, 1)).to.be.revertedWith("Pausable: paused");
+
       await instanceJO2024.unpause();
       expect(await instanceJO2024.paused()).to.be.equal(false);
     });
