@@ -90,6 +90,27 @@ describe("JO2024", function () {
     });
   });
 
+  describe("exchangeCloseeStart", () => {
+    it("Should exchangeStart not possible until close", async () => {
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      await instanceJO2024.connect(signer2).mint(3, 10);
+      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
+      await instanceJO2024.connect(signer2).exchangeFound(signer1.address);
+      await expect(instanceJO2024.connect(signer1).exchangeStart(3, 1, 10)).to.be.revertedWith("Exchange to close");
+    });
+  });
+
+  describe("exchangeInsufficientBalance", () => {
+    it("Should exchange signer Insufficient balance for transfer", async () => {
+      await instanceJO2024.connect(signer1).mint(4, 10);
+      await instanceJO2024.connect(signer2).mint(3, 5);
+      await expect(instanceJO2024.connect(signer1).exchangeStart(5, 3, 10)).to.be.revertedWith("NFT does not exist to exchange");
+      await expect(instanceJO2024.connect(signer1).exchangeStart(4, 5, 10)).to.be.revertedWith("NFT does not exist to exchange");
+      await expect(instanceJO2024.connect(signer1).exchangeStart(4, 3, 11)).to.be.revertedWith("Insufficient balance for transfer : from");
+      await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
+      await expect(instanceJO2024.connect(signer2).exchangeFound(signer1.address)).to.be.revertedWith("Insufficient balance for transfer : to");
+    });
+  });
 
   describe("burn", () => {
     it("Should burn correctly", async () => {
@@ -119,8 +140,6 @@ describe("JO2024", function () {
     it("Should unpause correctly", async () => {
       await instanceJO2024.pause();
       expect(await instanceJO2024.paused()).to.be.equal(true);
-      // await expect(await instanceJO2024.connect(signer1).mint(0, 1)).to.be.revertedWith("Pausable: paused");
-
       await instanceJO2024.unpause();
       expect(await instanceJO2024.paused()).to.be.equal(false);
     });

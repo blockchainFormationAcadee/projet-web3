@@ -73,8 +73,8 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// @param _amount The amount to exchange
     function exchangeStart(uint256 _TypeFrom, uint256 _TypeTo, uint256 _amount) public {
         console.log("exchangeStart _TypeFrom %s _TypeTo %s _amount %s", _TypeFrom, _TypeTo, _amount);
-        require(balanceOf(msg.sender, _TypeFrom) >= _amount, "No NFTType sufficient from");
-        require(_TypeFrom <= 4 && _TypeTo <= 4,"NFT does not exist");
+        require(_TypeFrom <= 4 && _TypeTo <= 4,"NFT does not exist to exchange");
+        require(balanceOf(msg.sender, _TypeFrom) >= _amount, "Insufficient balance for transfer : from");
         require(_TypeFrom != _TypeTo,"NFTs equals");
         require (_amount > 0, "Mint Zero");
         require(_mapToExchange[msg.sender].exchangeState != ExchangeState.ToClose, "Exchange to close");
@@ -132,7 +132,7 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// @param _Type The NFT type to burn
     function burn(uint256 _Type) public {
         console.log("burn msg.sender %s _Type %s", msg.sender, _Type);
-        require(_Type <= 4,"NFT does not exist");
+        require(_Type <= 4,"NFT does not exist to burn");
         require(balanceOf(msg.sender, _Type) >= amountBurn, "No NFTType sufficient to burn");
         require (minted[_Type+5] + 1 <= supplies[_Type+5], "The unique NFT have been minted");
         _burn(msg.sender, _Type, amountBurn);
