@@ -2,16 +2,11 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
-
-interface IRecursive {
-    function exchangeByContract(address) external;
-}
+import "./interfaces/IRecursive.sol";
 
 /// @author Franck
 /// @title JO 2024 NFT - Acadee Project
@@ -20,8 +15,6 @@ interface IRecursive {
 ///         Sport unique NFT is a reward for example to get a ticket for the JO2024
 /// @dev Deploy a ERC1155 NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
-    string private constant _name = 'JO 2024 Paris';
-    string private constant _symbol = 'JO';
     // Amount fungible NFT to burn and get an unique sport NFT
     uint256 private amountBurn = 100;
 
@@ -33,7 +26,7 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
 
     /// workflow exchange state
     enum ExchangeState {
-        Zero,
+        Init,
         Start,
         ToClose
     }
@@ -53,6 +46,21 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// @dev Constructor 
     /// set _uri 
     constructor() ERC1155("https://nftstorage.link/ipfs/bafybeie4rhk5qbnog5vbtvbzk6pcyweaxug7shyqrin6hum32x42vbllke/{id}.json") {
+    }
+
+    /// set _uri only Ownner
+    function setURI(string memory _uri) external onlyOwner() {
+        _setURI(_uri);
+    }
+
+    /// change the supply
+    function setSupply(uint256 _Type, uint256 _amount) external onlyOwner() {
+        supplies[_Type]=_amount;
+    }
+
+    /// change the amount to burn
+    function setAmountBurn(uint256 _amount) external onlyOwner() {
+        amountBurn=_amount;
     }
 
      /// @notice Mint function by one type 
@@ -96,6 +104,13 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         setApprovalForAll(address(this), false);
     }
 
+    /// @dev Call external function to become msg.sender     
+    /// @param _from The address who have started the exchange
+    function exchangeToDoByContract(address _from) private {
+        console.log("exchangeToDoByContract _from %s", _from);
+        IRecursive(address(this)).exchangeByContract(_from);
+    }
+
     /// @notice exchange by the contract NFTs type between 2 address      
     /// @param _from The address who have started the exchange
     /// @dev Function external for that the contrat become  the msg.sender
@@ -105,13 +120,6 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         _mapToExchange[_from].exchangeState = ExchangeState.ToClose;
         safeTransferFrom(_from, _mapToExchange[_from].to, _mapToExchange[_from].TypeFrom, _mapToExchange[_from].amount, "0x0");
         safeTransferFrom(_mapToExchange[_from].to, _from, _mapToExchange[_from].TypeTo, _mapToExchange[_from].amount, "0x0");
-    }
-    
-    /// @dev Call external function to become msg.sender     
-    /// @param _from The address who have started the exchange
-    function exchangeToDoByContract(address _from) private {
-        console.log("exchangeToDoByContract _from %s", _from);
-        IRecursive(address(this)).exchangeByContract(_from);
     }
 
     /// @notice exchangeClose NFTs type between 2 address
@@ -138,18 +146,6 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
         _burn(msg.sender, _Type, amountBurn);
         // mint unique NFT of type
         mint(_Type+5, 1);
-    }
-
-    /// @dev Gets the NFT name.
-    /// @return string representing the NFT name
-    function name() external pure returns (string memory) {
-        return _name;
-    }
-
-    /// @dev Gets the NFT symbol.
-    /// @return string representing the NFT symbol
-    function symbol() external pure returns (string memory) {
-        return _symbol;
     }
 
     /// @notice Pause the contract

@@ -2,11 +2,11 @@ import * as dotenv from 'dotenv';
 import { HardhatUserConfig } from "hardhat/config";
 import "@typechain/hardhat";
 import "@nomicfoundation/hardhat-toolbox";
-require('@nomiclabs/hardhat-ethers');
-require("@nomiclabs/hardhat-etherscan");
-require("hardhat-deploy")
-require("hardhat-gas-reporter");
-require("solidity-coverage");
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-etherscan";
+import "hardhat-deploy";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
 
 dotenv.config();
 let accounts: string[] = [];
@@ -30,7 +30,7 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     enabled: true,
-    //outputFile: "gas-report.txt",
+    outputFile: "gas-report.txt",
     noColors: true,
     currency: "USD",
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,

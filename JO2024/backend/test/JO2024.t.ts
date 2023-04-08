@@ -29,12 +29,34 @@ describe("JO2024", function () {
     })
   });
 
+  describe("Modify uri by Ownable and not Ownable", () => {
+    it("Should set uri", async () => {
+      await instanceJO2024.setURI("https://nftstorage.link/ipfs");
+      await expect(instanceJO2024.connect(signer1).setURI("https://nftstorage.link/ipfs")).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+
+  describe("Modify supply by Ownable and not Ownable", () => {
+    it("Should set uri", async () => {
+      await instanceJO2024.setSupply(0,50000);
+      await expect(instanceJO2024.connect(signer2).setSupply(0,50000)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+
+  describe("Modify change the amount to burn by Ownable and not Ownable", () => {
+    it("Should set amount to burn", async () => {
+      await instanceJO2024.setAmountBurn(50000);
+      await expect(instanceJO2024.connect(signer1).setAmountBurn(50000)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+
   describe("Minting signer1", () => {
     it("Should mint correctly", async () => {
       await instanceJO2024.connect(signer1).mint(4, 10);
     });
   });
-  describe("Minting", () => {
+
+  describe("Multiple Minting", () => {
     it("Should mint correctly", async () => {
       await expect(instanceJO2024.mint(0, 0)).to.be.revertedWith("Mint Zero");
       await instanceJO2024.mint(0, 1);
@@ -109,6 +131,12 @@ describe("JO2024", function () {
       await expect(instanceJO2024.connect(signer1).exchangeStart(4, 3, 11)).to.be.revertedWith("Insufficient balance for transfer : from");
       await instanceJO2024.connect(signer1).exchangeStart(4, 3, 10);
       await expect(instanceJO2024.connect(signer2).exchangeFound(signer1.address)).to.be.revertedWith("Insufficient balance for transfer : to");
+    });
+  });
+
+  describe("exchangeByContract not the adress contrat", () => {
+    it("Should error not the adress contrat", async () => {
+      await expect(instanceJO2024.connect(signer2).exchangeByContract(signer1.address)).to.be.revertedWith("Only contract address could exchange");
     });
   });
 
