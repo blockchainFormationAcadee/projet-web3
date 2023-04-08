@@ -4,7 +4,6 @@ import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
 // Dev : In production the ABI json will be stored into /config/JO2024.json
 import Contract from '../../backend/artifacts/contracts/JO2024.sol/JO2024.json';
-import LogoConnect from 'components/LogoConnect'
 import { formAcadeeAddress, contractAddress } from 'config/constants';
 
 export default function Home() {
@@ -186,9 +185,9 @@ export default function Home() {
   }
   return (
     <>
-      < LogoConnect />
       <Flex>
         {(isConnected ? (
+
           <Flex direction="column">
             <Text align="center">Tu es connecté et tu peux collecter des NFTs JO2024</Text>
             <Flex mt="2rem">
@@ -223,7 +222,7 @@ export default function Home() {
           <Box boxSize='100%' margin="100">
               <Text align="center">Plateform de collection NFTs des Jeux Olympiques Paris 2024.<br/>
                                    Collectionne, échange et gagne des NFTs uniques.<br/>
-                                   Merci de vous connecter avec le bouton 'Connect Wallet'.</Text>
+                                   Merci de vous connecter avec le bouton 'Connexion JO2024'.</Text>
           </Box>          
         ))}
       </Flex>

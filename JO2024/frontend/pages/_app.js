@@ -11,6 +11,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import { ChakraProvider } from '@chakra-ui/react'
 
 import { apiKeyAlchemyProvider } from 'config/constants';
+import Header from 'components/Header'
 
 const { chains, provider } = configureChains(
   [hardhat, polygonMumbai],
@@ -21,7 +22,7 @@ const { chains, provider } = configureChains(
 );
 
 const { connectors } = getDefaultWallets({
-  appName: 'RainbowKit App for JO2024',
+  appName: 'JO Paris 2024',
   chains
 });
 
@@ -36,6 +37,7 @@ export default function App({ Component, pageProps }) {
     <ChakraProvider>
       <WagmiConfig client={wagmiClient}>
         <RainbowKitProvider chains={chains}>
+          < Header />
           <Component {...pageProps} />
         </RainbowKitProvider>
       </WagmiConfig>
