@@ -15,6 +15,9 @@ import "./interfaces/IRecursive.sol";
 ///         Sport unique NFT is a reward for example to get a ticket for the JO2024
 /// @dev Deploy a ERC1155 NFT Collection
 contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
+    // For Opensea
+    string private constant _name = 'JO 2024 Paris';
+    string private constant _symbol = 'JO';
     // Amount fungible NFT to burn and get an unique sport NFT
     uint256 private amountBurn = 100;
 
@@ -156,5 +159,35 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// @notice Unpause the contract
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    /// @dev Gets the amountBurn.
+    /// @return uint256 representing the amount to burn
+    function getAmountBurn() external view returns (uint256) {
+        return amountBurn;
+    }
+
+    /// @dev Gets the supply by type.
+    /// @return uint256 representing the supply for a type
+    function getSupply(uint256 _type) external view returns (uint256) {
+        return supplies[_type];
+    }
+
+    /// @dev Gets the minted by type.
+    /// @return uint256 representing the minted for a type
+    function getMinted(uint256 _type) external view returns (uint256) {
+        return minted[_type];
+    }
+
+    /// @dev Gets the token name.
+    /// @return string representing the token name
+    function name() external pure returns (string memory) {
+        return _name;
+    }
+
+    /// @dev Gets the token symbol.
+    /// @return string representing the token symbol
+    function symbol() external pure returns (string memory) {
+        return _symbol;
     }
 }

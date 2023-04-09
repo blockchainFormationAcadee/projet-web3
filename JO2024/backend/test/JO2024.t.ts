@@ -22,16 +22,39 @@ describe("JO2024", function () {
     instanceJO2024 = (await JO2024Factory.deploy()) as JO2024;
     await instanceJO2024.deployed();
   });
+  
+  describe("Test total amount Burn", () => {
+    it("Should total amount Burn = 100", async () => {
+      expect(await instanceJO2024.getAmountBurn()).to.be.equal(100);
+    })
+  });
+
+  describe("Test total minted", () => {
+    it("Should total minted = 0", async () => {
+      expect(await instanceJO2024.getMinted(0)).to.be.equal(0);
+    })
+  });
+
+  describe("Test total supply", () => {
+    it("Should total supply for a type = 10000", async () => {
+      expect(await instanceJO2024.getSupply(0)).to.be.equal(10000);
+    })
+  });
 
   describe("Deployment Pause false", () => {
-    it("Shouldn't pause the mint", async () => {
+    it("Should pause the mint", async () => {
       expect(await instanceJO2024.paused()).to.be.equal(false);
     })
   });
 
-  describe("Modify uri by Ownable and not Ownable", () => {
+  describe("Modify uri by Ownable", () => {
     it("Should set uri", async () => {
       await instanceJO2024.setURI("https://nftstorage.link/ipfs");
+    });
+  });
+
+  describe("Modify uri by not Ownable", () => {
+    it("Shouldn't set uri", async () => {
       await expect(instanceJO2024.connect(signer1).setURI("https://nftstorage.link/ipfs")).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -39,6 +62,11 @@ describe("JO2024", function () {
   describe("Modify supply by Ownable and not Ownable", () => {
     it("Should set uri", async () => {
       await instanceJO2024.setSupply(0,50000);
+    });
+  });
+
+  describe("Modify supply by not Ownable", () => {
+    it("Shouldn't set uri", async () => {
       await expect(instanceJO2024.connect(signer2).setSupply(0,50000)).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -46,6 +74,7 @@ describe("JO2024", function () {
   describe("Modify change the amount to burn by Ownable and not Ownable", () => {
     it("Should set amount to burn", async () => {
       await instanceJO2024.setAmountBurn(50000);
+      expect(await instanceJO2024.getAmountBurn()).to.be.equal(50000);
       await expect(instanceJO2024.connect(signer1).setAmountBurn(50000)).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -61,6 +90,8 @@ describe("JO2024", function () {
       await expect(instanceJO2024.mint(0, 0)).to.be.revertedWith("Mint Zero");
       await instanceJO2024.mint(0, 1);
       await instanceJO2024.mint(1, 1);
+      expect(await instanceJO2024.getMinted(0)).to.be.equal(1);
+      expect(await instanceJO2024.getMinted(1)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
       await instanceJO2024.mint(0, 1);

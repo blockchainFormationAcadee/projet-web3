@@ -10,11 +10,11 @@ export default function Header() {
             <Image src='/logo.ico' boxSize='100px' alt='Logo' />
             {(isConnected ? (
                 <Flex>
-                    < ActiveLink children="Home" href="/" />
-                    < ActiveLink children="My Collection" href="/ExchangeToken" />
-                    < ActiveLink children="Mint" href="/ExchangeToken" />
-                    < ActiveLink children="Exchange NFT" href="/ExchangeToken" />
-                    < ActiveLink children="Transform NFT" href="/ExchangeToken" />
+                    < ActiveLink children="Accueil" href="/" />
+                    < ActiveLink children="Quêtes" href="/quetes" />
+                    < ActiveLink children="Mes JO" href="/MyJo2024" />
+                    < ActiveLink children="Exchange" href="/ExchangeToken" />
+                    < ActiveLink children="Transforme" href="/ExchangeToken" />
                 </Flex>
             ) : (
                 < ActiveLink children="Home" href="/" />
