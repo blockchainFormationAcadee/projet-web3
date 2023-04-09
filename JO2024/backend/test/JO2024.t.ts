@@ -24,20 +24,20 @@ describe("JO2024", function () {
   });
   
   describe("Test total amount Burn", () => {
-    it("Should total amount Burn = 100", async () => {
-      expect(await instanceJO2024.getAmountBurn()).to.be.equal(100);
+    it("Should total amount Burn = 1000", async () => {
+      expect(await instanceJO2024.amountBurn()).to.be.equal(1000);
     })
   });
 
   describe("Test total minted", () => {
     it("Should total minted = 0", async () => {
-      expect(await instanceJO2024.getMinted(0)).to.be.equal(0);
+      expect(await instanceJO2024.minted(0)).to.be.equal(0);
     })
   });
 
   describe("Test total supply", () => {
     it("Should total supply for a type = 10000", async () => {
-      expect(await instanceJO2024.getSupply(0)).to.be.equal(10000);
+      expect(await instanceJO2024.supplies(0)).to.be.equal(10000);
     })
   });
 
@@ -74,7 +74,7 @@ describe("JO2024", function () {
   describe("Modify change the amount to burn by Ownable and not Ownable", () => {
     it("Should set amount to burn", async () => {
       await instanceJO2024.setAmountBurn(50000);
-      expect(await instanceJO2024.getAmountBurn()).to.be.equal(50000);
+      expect(await instanceJO2024.amountBurn()).to.be.equal(50000);
       await expect(instanceJO2024.connect(signer1).setAmountBurn(50000)).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -90,8 +90,8 @@ describe("JO2024", function () {
       await expect(instanceJO2024.mint(0, 0)).to.be.revertedWith("Mint Zero");
       await instanceJO2024.mint(0, 1);
       await instanceJO2024.mint(1, 1);
-      expect(await instanceJO2024.getMinted(0)).to.be.equal(1);
-      expect(await instanceJO2024.getMinted(1)).to.be.equal(1);
+      expect(await instanceJO2024.minted(0)).to.be.equal(1);
+      expect(await instanceJO2024.minted(1)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 0)).to.be.equal(1);
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(1);
       await instanceJO2024.mint(0, 1);
@@ -177,7 +177,7 @@ describe("JO2024", function () {
       expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(10000);
       // burn type 1 amountBurn=100
       await instanceJO2024.burn(1);
-      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(9900);
+      expect(await instanceJO2024.balanceOf(owner.address, 1)).to.be.equal(9000);
       expect(await instanceJO2024.balanceOf(owner.address, 6)).to.be.equal(1);
     });
   });

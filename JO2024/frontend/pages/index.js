@@ -53,17 +53,9 @@ export default function Home() {
       <Flex>
         {(isConnected ? (
 
-          <Flex direction="row">
-            <Text align="center">Mes quêtes</Text>
-            <Flex mt="2rem">
-              <Box boxSize='100%'>
-                <Text align="center">Quel est le record du monde 100m</Text>
-                <Button onClick={() => mint(0,50)}>8s58s</Button><br/><br/>
-                <Button onClick={() => mint(0,50)}>9s58s</Button><br/><br/>
-                <Button onClick={() => mint(0,50)}>10s58</Button><br/><br/>
-              </Box>               
-            </Flex>
-          </Flex>
+          <Box boxSize='100%' margin="100">
+            <Text align="center">Tu es bien connecté tu peux remplir tes quêtes et gagner des JO !</Text>
+          </Box>  
         ) : (
           <Box boxSize='100%' margin="100">
               <Text align="center">Plateform de collection NFTs des Jeux Olympiques Paris 2024.<br/><br/>

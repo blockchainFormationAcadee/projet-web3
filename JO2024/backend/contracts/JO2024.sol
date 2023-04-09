@@ -19,13 +19,13 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     string private constant _name = 'JO 2024 Paris';
     string private constant _symbol = 'JO';
     // Amount fungible NFT to burn and get an unique sport NFT
-    uint256 private amountBurn = 100;
+    uint256 public amountBurn = 1000;
 
     /// The 5 fungible NFTs type possible and 5 unique NFT possible :
     /// AthletismeNFT = 0, AvironNFT = 1, EscrimeNFT = 2, BasketballNFT = 3, BoxeNFT = 4
     /// UniqueAthletismeNFT = 5, UniqueAvironNFT = 6, UniqueEscrimeNFT = 7, UniqueBasketballNFT = 8, UniqueBasketballNFT = 9, UniqueBoxeNFT = 10
-    uint256[] private supplies = [10000,10000,10000,10000,10000,1,1,1,1,1];
-    uint256[] private minted = [0,0,0,0,0,0,0,0,0,0];
+    uint256[] public supplies = [10000,10000,10000,10000,10000,1,1,1,1,1];
+    uint256[] public minted = [0,0,0,0,0,0,0,0,0,0];
 
     /// workflow exchange state
     enum ExchangeState {
@@ -159,24 +159,6 @@ contract JO2024 is ERC1155, Pausable, Ownable, IRecursive {
     /// @notice Unpause the contract
     function unpause() external onlyOwner {
         _unpause();
-    }
-
-    /// @dev Gets the amountBurn.
-    /// @return uint256 representing the amount to burn
-    function getAmountBurn() external view returns (uint256) {
-        return amountBurn;
-    }
-
-    /// @dev Gets the supply by type.
-    /// @return uint256 representing the supply for a type
-    function getSupply(uint256 _type) external view returns (uint256) {
-        return supplies[_type];
-    }
-
-    /// @dev Gets the minted by type.
-    /// @return uint256 representing the minted for a type
-    function getMinted(uint256 _type) external view returns (uint256) {
-        return minted[_type];
     }
 
     /// @dev Gets the token name.
